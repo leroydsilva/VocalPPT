@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>{{data}}</h1>
+    <iframe id='calendar' src="http://docs.google.com/gview?url={{data}}/static/vocal.pptx&embedded=true" style="width:600px; height:500px;"  frameborder="0"></iframe>
+    <img src="{{url_for('static', filename='download.jpg')}}" align="middle" />
+         
+</body>
+<script>
+
+setInterval(() => {
+    fetch("/getfile").then(res => res.json()).then(data => {
+      if (data.mystring === 'True') 
+      {
+        document.getElementById("calendar").src=calendar.src;
+        fetch('/setfalse').then(res => console.log('done'));
+        console.log(data)
+      }
+    })
+  }, 100);
+</script>
+</html>
