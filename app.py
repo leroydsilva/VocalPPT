@@ -79,6 +79,8 @@ def listen1():
         template={"1":'static/animals.pptx', "2":'static/business.pptx'}
         data=listen()
         # data=data.strip()
+        dataarr=data.split()
+        data=dataarr[1]
         print(data)
         if data in template:
             obj=CreatePpt(template[data])
