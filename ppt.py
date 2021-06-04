@@ -45,17 +45,36 @@ def listen():
 class CreatePpt:
     # global fileName
     def __init__(self,temp=None):
-         self.pr1=Presentation(temp)         
+         self.pr1=Presentation(temp)  
 
-    def ppt(self,title,subtitle=""):    
+    def make_slide(self,layout):
+        self.slide=self.pr1.slides.add_slide(self.pr1.slide_layouts[layout])
+        self.pr1.save("static/{}.pptx".format(name))
+        self.l=[]
+        self.ph=[]
+        for s in self.slide.placeholders:
+                self.l.append(s.name)
+                self.ph.append(s.placeholder_format.idx)
+
+        return self.l            
+
+    def add_title(self,title):
         self.title1=self.slide.shapes.title
         self.title1.text=title
         self.pr1.save("static/{}.pptx".format(name))
-        self.subtitle1=self.slide.placeholders[1]
+
+
+    def add_subtitle(self,ph_num,subtitle=""):    
+        self.subtitle1=self.slide.placeholders[self.ph[ph_num]]
         self.subtitle1.text=subtitle
         self.pr1.save("static/{}.pptx".format(name))
         print('done sucessfully')
 
-    def make_slide(self,layout):
-        self.slide=self.pr1.slides.add_slide(self.pr1.slide_layouts[layout])
+    def add_text(self):
+        pass
+
+    def add_pic(self):
+        pass
+
+    
         
