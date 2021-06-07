@@ -65,8 +65,8 @@ label {
     <button class="btn waves-effect waves-light" type="hidden" onclick='abcd()'>RECORD
       <i class="material-icons right">mic</i>
     </button>
-    <div >
-      <h2 id="transcript"> </h2>
+    <div style="display:none;" >
+      <p id="transcript"></p>
     </div>
    
     <h1 style="color:red;"> </h1>
@@ -87,6 +87,12 @@ label {
 <br/>
 <br/>
 <script>
+
+ fetch("/talkFunc/hello").then(res => res.json()).then(data => {
+     
+    });
+
+
 setInterval(() => {
     fetch("/getaudio").then(res => res.json()).then(data => {
       let doc = document.getElementById("transcript")
@@ -96,6 +102,15 @@ setInterval(() => {
       }
     })
   }, 100);
+
+setInterval(() => {
+   let doc = document.getElementById("transcript").textContent;
+    console.log(doc+"here");
+    if(doc!==""){
+      window.open("mainhome","_self")
+    }
+  }, 100);
+
 
 
 

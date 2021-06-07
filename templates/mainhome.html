@@ -27,6 +27,18 @@
   text-shadow: 2px 2px #FF0000;
   font-size:50px;
 }
+
+.column {
+  float: left;
+  width: 33.33%;
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
 </style>
 </head>
 <body>
@@ -42,6 +54,12 @@
 <center><h1 class="project_name">Speech Recognition Project With Django</h1>
 <h4 class="my_name">By Sachin Pawar</h4>
 </center>
+<div class="row">
+  {% for o in data %} 
+    <div class="column"><img src='{{o}}'></div>
+    
+  {% endfor %}    
+  </div>
 
 </body>
 

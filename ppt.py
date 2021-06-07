@@ -1,8 +1,10 @@
 from pptx import Presentation
 import pyttsx3
 import speech_recognition as sr
-from app import name
-
+from pptx.util import Inches
+from PIL import Image
+# from app import name
+name='test1'
 def talk(audio):
     
     # time.sleep(2)
@@ -25,7 +27,7 @@ def listen():
     with sr.Microphone() as source:
         # r.adjust_for_ambient_noise(source)
         # r.pause_threshold=1
-        # r.energy_threshold=200
+        # r.energy_threshold=300
         print("Speak:")
         audio = r.listen(source)
 
@@ -44,6 +46,7 @@ def listen():
 
 class CreatePpt:
     # global fileName
+    global name
     def __init__(self,temp=None):
          self.pr1=Presentation(temp)  
 
@@ -70,11 +73,48 @@ class CreatePpt:
         self.pr1.save("static/{}.pptx".format(name))
         print('done sucessfully')
 
-    def add_text(self):
+    def add_text(self,ph_num,text_data=""):
+        self.t=self.slide.placeholders[self.ph[ph_num]]
+        self.text_frame = self.t.text_frame
+        self.p=self.text_frame.add_paragraph()
+        self.run = self.p.add_run()
+        self.run.text=text_data
+        self.pr1.save("static/{}.pptx".format(name))
+        print("done text")
+
+    def change_font(self,data):
         pass
 
-    def add_pic(self):
-        pass
+    def add_image(self, ph_num, image_url):
+        self.placeholder = self.slide.placeholders[self.ph[ph_num]]
+
+        # Calculate the image size of the image
+        im = Image.open(image_url)
+        width, height = im.size
+
+        # Make sure the placeholder doesn't zoom in
+        self.placeholder.height = height
+        self.placeholder.width = width
+
+        # Insert the picture
+        self.placeholder = self.placeholder.insert_picture(image_url)
+
+        # Calculate ratios and compare
+        image_ratio = width / height
+        self.placeholder_ratio = self.placeholder.width / self.placeholder.height
+        ratio_difference = self.placeholder_ratio - image_ratio
+
+        # Placeholder width too wide:
+        if ratio_difference > 0:
+            difference_on_each_side = ratio_difference / 2
+            self.placeholder.crop_left = -difference_on_each_side
+            self.placeholder.crop_right = -difference_on_each_side
+        # Placeholder height too high
+        else:
+            difference_on_each_side = -ratio_difference / 2
+            self.placeholder.crop_bottom = -difference_on_each_side
+            self.placeholder.crop_top = -difference_on_each_side
+        self.pr1.save("static/{}.pptx".format(name))
 
     
         
