@@ -150,10 +150,7 @@ def speech_to_text():
 
     return render_template('speech_to_text.html',data=q,data2=user_input,filename=name)
 
-@app.route('/talkFunc/<strin>')    
-def talkFunc(strin):
-    talk(strin)
-    return jsonify()
+
 
 
 @app.route('/getaudio')    
@@ -185,14 +182,17 @@ def iterate():
             print('Picture')    
         talk(f'please enter data into {slide_layout[i]}')
         i+=1 
-        return jsonify({'mystring':slide_layout[i-1]})
+        return jsonify({'mystring':f'please enter data into {slide_layout[i]}'})
     else:
         count=1 
         talk('slide done,do you want to add more slides? ')
         return jsonify({'mystring':"slide done do you want to add more slides?"})
           
 
-
+@app.route('/talkFunc/<strin>')    
+def talkFunc(strin):
+    talk(strin)
+    return jsonify()
 
 li=['Select the template by saying the number','do you have a new slide to add?','choose the layout','what is your title ',
 'do you have a subtitle','what is your subtitle','slide 1 done']
@@ -212,9 +212,11 @@ def listen1():
     elif count==1:
         template={"1":'static/animals.pptx', "2":'static/business.pptx'}
         data=listen()
-        # data=data.strip()
         dataarr=data.split()
-        data=dataarr[1]
+        try:
+            data=dataarr[1]
+        except:
+            data=dataarr[0]    
         print(data)
         if data in template:
             obj=CreatePpt(template[data])
@@ -233,26 +235,37 @@ def listen1():
         if 'yes' in data:
             talk(li[count])
             return jsonify({'mystring':li[count]})
-        else:
+        elif 'no' in data:
             count=9    
+        else:
+            talk('sorry did not get you') 
+            count=1
+            return jsonify({'mystring':'sorry did not get you'})     
 
     elif count ==3:
         i=0
         data=listen()
         dic={"0":0,"1":1,"2":2}
+        dataarr=data.split()
+        try:
+            data=dataarr[1]
+        except:
+            data=dataarr[0] 
         if data in dic:
             slide_layout=obj.make_slide(dic[data])
             display()
             print(slide_layout)
             n=len(slide_layout)
             return iterate()
-
+        else:
+            talk('layout not available') 
+            count=2
+            return jsonify({'mystring':'layout not available'})
 
     elif count==4:       
         data=listen()
         obj.add_title(data)
         display()
-        # talk(f'please enter subtitle into {slide_layout[i]}')
         return iterate()
     elif count==5:
         data=listen()
@@ -274,8 +287,12 @@ def listen1():
             count=5
             talk('next point?') 
             return jsonify({'mystring':'next point?'})
-        else:
+        elif 'no' in data:
             return iterate()    
+        else:
+            talk('sorry did not get you') 
+            count=6
+            return jsonify({'mystring':'sorry did not get you'})    
         
     elif count ==8:
         images={"1":'static/1.jpg', "2":'static/2.jpg'}
@@ -286,7 +303,11 @@ def listen1():
         if data in images:
             obj.add_image(i-1,images[data])
             display()
-        return iterate()    
+            return iterate()    
+        else:
+            talk('Picture not available') 
+            count=7
+            return jsonify({'mystring':'Picture not available'})    
 
     elif count ==9:
         talk(li[count])
@@ -295,9 +316,7 @@ def listen1():
         talk('thank you')
         return jsonify({'mystring':"thank you"})
 
-    
-    # adsasd(data)
-    # return jsonify({'mystring':li[count]})
+
 
 def display():
     with open('file.txt','w') as f:

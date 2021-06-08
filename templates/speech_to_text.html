@@ -65,17 +65,17 @@ label {
     <button class="btn waves-effect waves-light" type="hidden" onclick='abcd()'>RECORD
       <i class="material-icons right">mic</i>
     </button>
-    <div style="display:none;" >
-      <p id="transcript"></p>
+    <div  >
+      <p id="transcript" style="color:black;font-size:50px;font-weight: bold;"></p>
     </div>
    
     <h1 style="color:red;"> </h1>
  
-    <h1 style="color:red;">nothing</h1>
+    
 
    
 
-    <iframe id='calendar' src="http://docs.google.com/gview?url={{data}}/static/{{filename}}.pptx&embedded=true" style="width:600px; height:500px;"  frameborder="0"></iframe>
+    <iframe id='calendar' src="http://docs.google.com/gview?url={{data}}/static/{{filename}}.pptx&embedded=true" style="width:100%; height:500px;"  frameborder="0"></iframe>
     
     
     </iframe>
@@ -88,9 +88,7 @@ label {
 <br/>
 <script>
 
- fetch("/talkFunc/Select your template").then(res => res.json()).then(data => {
-     
-    });
+
 
 
 setInterval(() => {
@@ -103,14 +101,10 @@ setInterval(() => {
     })
   }, 100);
 
-setInterval(() => {
-   let doc = document.getElementById("transcript").textContent;
-    console.log(doc+"here");
-    if(doc!==""){
-      window.open("mainhome","_self")
-    }
-  }, 100);
 
+fetch("/talkFunc/What is the topic of your  powerpoint").then(res => res.json()).then(data => {
+     
+    });
 
 
 

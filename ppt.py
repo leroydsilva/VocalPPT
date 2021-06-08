@@ -48,7 +48,8 @@ class CreatePpt:
     # global fileName
     global name
     def __init__(self,temp=None):
-         self.pr1=Presentation(temp)  
+         self.pr1=Presentation(temp) 
+        #  self.pr1.save("static/{}.pptx".format(name)) 
 
     def make_slide(self,layout):
         self.slide=self.pr1.slides.add_slide(self.pr1.slide_layouts[layout])
