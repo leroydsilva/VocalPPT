@@ -8,13 +8,34 @@
     <!-- Compiled and minified JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+     <script
+    src="http://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.0.943/pdf.min.js">
+  </script>
+ 
+  <style>
+      #canvas_container {
+          width: 100%;
+          height: 50%;
+          overflow: auto;
+      }
+ 
+      #canvas_container {
+        background: #333;
+        text-align: center;
+        border: solid 3px;
+      }
+  </style>
 <style>
 body  {
 
-  background-color: #FFFF;
+  background-color: black;
 }
-
-
+#question{
+  color: white;
+}
+p1{
+  color:white;
+}
 .button {
   background-color: #0020C2;
   border: none;
@@ -40,24 +61,22 @@ label {
     <br/>
     <br/>
     <br/>
-    <h1><a href="/mainhome">Home</a> </h1>
-    <br/>
-    <br/>
-    <br/>
+    {% if session.phone %}
+          <a href="/logout">logout</a>
+     {% else %}
+     <li><a href="{{ url_for('login') }}">Login</a></li>
+    {% endif %}
     <br/>
     <br/>
    
 
     
-    <ul class="collection with-header">
-      <li class="collection-header"><h4 id='question'>{{data2}}</h4></li>
+    
+      <h4 id='question'>{{ques}}</h4></li>
    
      
-    </ul>
+   
       
-      <br/>
-      <br/>
-      <br/>
       <br/>
       <br/>
       
@@ -66,19 +85,38 @@ label {
       <i class="material-icons right">mic</i>
     </button>
     <div  >
-      <p id="transcript" style="color:black;font-size:50px;font-weight: bold;"></p>
+      <p id="transcript" style="color:white;font-size:50px;font-weight: bold;"></p>
     </div>
    
-    <h1 style="color:red;"> </h1>
+    <h1 style="color:red;"> </h1> 
+ <div id="my_pdf_viewer">
+        <div id="canvas_container">
+            <canvas id="pdf_renderer"></canvas>
+        </div>
+        <div id="navigation_controls">
+          <button id="go_previous">Previous</button>
+          <input id="current_page" value="1" type="number"/>
+          <button id="go_next">Next</button>
+      </div>
+
+      <div id="zoom_controls">  
+          <button id="zoom_in">+</button>
+          <button id="zoom_out">-</button>
+      </div>
+      <!-- <div class="container">
+                <button id="prev_page">Previos Page</button>
+                <button id="next_page">next Page</button>
+                <span id="current_page_num"></span>
+                    of
+                <span id="total_page_num"></span>
+                    
+                <input type="text" id="page_num">
+                <button id="go_to_page">Go To Page</button> -->
+        </div>  
  
+        
     
-
-   
-
-    <iframe id='calendar' src="http://docs.google.com/gview?url={{data}}/static/{{filename}}.pptx&embedded=true" style="width:100%; height:500px;"  frameborder="0"></iframe>
-    
-    
-    </iframe>
+    <!-- <button><a href='download'>DOWNLOAD</button> -->
 
 </center>
 
@@ -86,35 +124,123 @@ label {
 <br/>
 <br/>
 <br/>
+
 <script>
+ var myState = {
+            pdf: null,
+            currentPage: 1,
+            totalpage:0,
+            zoom: 1
+        }
+      
+        pdfjsLib.getDocument('./static/{{filename}}.pdf').then((pdf) => {
+      
+            myState.pdf = pdf;
+            myState.totalpage=pdf._pdfInfo.numPages;
+            render();
+ 
+        });
+ 
+        function render() {
+            myState.pdf.getPage(myState.currentPage).then((page) => {
+          
+                var canvas = document.getElementById("pdf_renderer");
+                var ctx = canvas.getContext('2d');
+      
+                var viewport = page.getViewport(myState.zoom);
+ 
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+          
+                page.render({
+                    canvasContext: ctx,
+                    viewport: viewport
+                });
+            });
+        }
+ 
+        document.getElementById('go_previous').addEventListener('click', (e) => {
+            if(myState.pdf == null || myState.currentPage == 1) 
+              return;
+            myState.currentPage -= 1;
+            document.getElementById("current_page").value = myState.currentPage;
+            render();
+        });
+ 
+        document.getElementById('go_next').addEventListener('click', (e) => {
+            if(myState.pdf == null || myState.currentPage > myState.pdf._pdfInfo.numPages) 
+               return;
+            myState.currentPage += 1;
+            document.getElementById("current_page").value = myState.currentPage;
+            render();
+        });
+ 
+        document.getElementById('current_page').addEventListener('keypress', (e) => {
+            if(myState.pdf == null) return;
+          
+            // Get key code
+            var code = (e.keyCode ? e.keyCode : e.which);
+          
+            // If key code matches that of the Enter key
+            if(code == 13) {
+                var desiredPage = 
+                document.getElementById('current_page').valueAsNumber;
+                                  
+                if(desiredPage >= 1 && desiredPage <= myState.pdf._pdfInfo.numPages) {
+                    myState.currentPage = desiredPage;
+                    document.getElementById("current_page").value = desiredPage;
+                    render();
+                }
+            }
+        });
+ 
+        document.getElementById('zoom_in').addEventListener('click', (e) => {
+            if(myState.pdf == null) return;
+            myState.zoom += 0.5;
+            render();
+        });
+ 
+        document.getElementById('zoom_out').addEventListener('click', (e) => {
+            if(myState.pdf == null) return;
+            myState.zoom -= 0.5;
+            render();
+        });
 
 
+setInterval(() => {
+   let doc = document.getElementById("question").textContent;
+    console.log(doc+"here");                                      //function to switch between pages
+    if(doc =="choose the layout"){
+      window.open("layout","_self")
+    }
+    else if(doc.includes('Picture')){
+      window.open("picture","_self")
+    }
+  }, 100);
 
 
 setInterval(() => {
     fetch("/getaudio").then(res => res.json()).then(data => {
       let doc = document.getElementById("transcript")
-      if (data !== "") {
+      if (data !== "") {                                          //function to display the user voice
         doc.innerHTML = data.mystring
-        console.log(data)
+        //console.log(data)
       }
     })
   }, 100);
 
 
-fetch("/talkFunc/What is the topic of your  powerpoint").then(res => res.json()).then(data => {
-     
-    });
+
 
 
 
 function abcd(){
   fetch("/listen1").then(res => res.json()).then(data => {
-      console.log('listen')
-      let doc = document.getElementById("question")
+      console.log('listen')                                       //function to listen and display
+      let doc = document.getElementById("question")               // the question      
       if (data !== "") {
         doc.innerHTML = data.mystring
-        console.log(data)
+        //console.log(data)
       }
       
       
@@ -125,9 +251,29 @@ setInterval(() => {
     fetch("/getfile").then(res => res.json()).then(data => {
       if (data.mystring === 'True') 
       {
-        document.getElementById("calendar").src=calendar.src;
+        if(myState.pdf!=null)
+        {
+          console.log("pdf not null")
+          pdfjsLib.getDocument('./static/{{filename}}.pdf').then((pdf) => {
+      
+          myState.pdf = pdf;
+          myState.totalpage=pdf._pdfInfo.numPages;
+          render();
+          if(myState.totalpage>1 && myState.totalpage!=myState.currentPage)
+          {
+            myState.currentPage=myState.totalpage;
+            render();
+          }
+
+     });
+          
+        }
+        else{
+          console.log('pdf null')
+        }
+        //});//function for rendering
         fetch('/setfalse').then(res => console.log('done'));
-        console.log(data)
+        //console.log(data)
       }
     })
   }, 100);

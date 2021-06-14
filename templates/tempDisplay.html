@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
     <!-- Compiled and minified CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
@@ -11,10 +10,20 @@
 <style>
 body  {
 
-  background-color: #FFFF;
+  background-color: black;
 }
+.img-frame 
+{
+    display:row;
+    background:transparent;
+    padding:8px;
+    border:1px solid #ccc;
+    box-shadow:5px 5px 5px #999; 
+    }
 
-
+#question{
+  color: white;
+}
 .button {
   background-color: #0020C2;
   border: none;
@@ -36,51 +45,27 @@ label {
 </style>
 </head>
 <body>
-
 <center>
-<h1> VOCAL PPT </h1>
-<h3 id='question'> {{fname}} </h3>
-<br/>
-<h3> topics available are </h3>
-<br/>
-{% for o in data %} 
-       <h4 class='row'> {{o}} </h4>
-    
-   {% endfor %}
-<br/>   
-<div >
-    <p id="transcript" style="color:black;font-size:50px;font-weight: bold;"></p>
-</div>
-<br/>
-</center>
+<h4 id='question'>{{q}}</h4>
+</center> 
 
-
-    <div class='row' style="width:800px; margin:0 auto;">
-      
+</br>
+    <div class="row">
+        {% for o in data %} 
+          <img src='{{o}}'width="300" height="300" class='img-frame'>
+          
+        {% endfor %}    
     </div>
-
-<center>
-<button class="btn waves-effect waves-light" type="hidden" onclick='abcd()'>RECORD
-</center>
-
+    <center>
+    <div >
+        <p id="transcript" style="color:white;font-size:50px;font-weight: bold;"></p>
+    </div>
+        <button class="btn waves-effect waves-light" type="hidden" onclick='abcd()'>RECORD
+    </center>   
 </body>
 <script>
-fetch("/talkFunc/What is the topic of your  powerpoint").then(res => res.json()).then(data => {
-     
-    });
 
 
-setInterval(() => {
-   let doc = document.getElementById("transcript").textContent;
-    console.log(doc+"here"); 
-    if(doc=='no topic'){
-      window.open("layout","_self")
-    }                                     //function to switch between pages
-    else if(doc!="" && doc!='Could not understand audio'){
-      window.open("template","_self")
-    }
-    
-  }, 1);    
 
 function abcd(){
   fetch("/listen1").then(res => res.json()).then(data => {
@@ -88,21 +73,29 @@ function abcd(){
       let doc = document.getElementById("question")
       if (data !== "") {
         doc.innerHTML = data.mystring
-        //flag="true"
+        
         console.log(data)
       }
            
     })
 }
-
 setInterval(() => {
     fetch("/getaudio").then(res => res.json()).then(data => {
       let doc = document.getElementById("transcript")
-      if (data !== "") {                                          //function to display the user voice
+      if (data !== "") {
         doc.innerHTML = data.mystring
         console.log(data)
       }
     })
   }, 100);
-</script>    
+
+setInterval(() => {
+   let doc = document.getElementById("question").textContent;
+    console.log(doc+"here");
+    if(doc=="choose the layout"){
+      //window.open("speech_to_text","_self")
+      window.open("layout","_self")
+    }
+  }, 1);  
+</script>
 </html>

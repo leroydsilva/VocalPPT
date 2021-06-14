@@ -1,8 +1,8 @@
-from flask import Flask, render_template, Response, jsonify,redirect
+from flask import Flask, render_template, Response, jsonify,redirect,send_file,session,request,flash
 from flask import url_for
-from pyngrok import ngrok
+import os, re, os.path
 from ppt import talk,listen,CreatePpt
-import sys
+from flask_session import Session
 from flask_bootstrap import Bootstrap
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -10,6 +10,9 @@ from flask_wtf import FlaskForm
 from wtforms import StringField
 from wtforms.validators import InputRequired, Length
 import psycopg2
+from google_images_search import GoogleImagesSearch
+
+gis = GoogleImagesSearch('AIzaSyCg_SQ6Lh-zZG1XyHPESnEz5iKEYsTQXJc', '1de73d9f58afbefc5')
 
 database_uri = 'postgresql+psycopg2://{dbuser}:{dbpass}@{dbhost}/{dbname}'.format(
     dbuser="postgres",
@@ -18,10 +21,10 @@ database_uri = 'postgresql+psycopg2://{dbuser}:{dbpass}@{dbhost}/{dbname}'.forma
     dbname="Vocal"
 )
 
-name='test1'
+name='leroy'
 count=-1
 obj=''
-title=''
+
 
 app = Flask(__name__, static_url_path='/static')
 Bootstrap(app)
@@ -33,21 +36,26 @@ app.config.update(
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
+conn = psycopg2.connect(host="localhost", port = 5432, database="Vocal", user="postgres", password="admin")
+cur = conn.cursor()
 
-public_url = ngrok.connect(port = '80')
-print(public_url)
-s=str(public_url)
-abc=s.split(" ")
-q=abc[1].replace('"',"")
-q=q.replace('p','ps')
-print(q)
+# public_url = ngrok.connect(port = '80')
+# print(public_url)
+# s=str(public_url)
+# abc=s.split(" ")
+# q=abc[1].replace('"',"")
+# q=q.replace('p','ps') 
+# print(q)
 
 class LoginForm(FlaskForm):
     phone = StringField('phone', validators=[InputRequired()],id='transcript')
 
 class RegisterForm(FlaskForm):
     username = StringField('username', validators=[InputRequired(), Length(min=4)])
-    phone = StringField('phone', validators=[InputRequired(), Length(max=10)])
+    phone = StringField('phone', validators=[InputRequired(), Length(min=10)])
 
 class User(db.Model):
     name = db.Column(db.String(50), primary_key=True)
@@ -58,7 +66,26 @@ class User(db.Model):
         self.phone = phone
 
 class Pictures(db.Model):
-    category = db.Column(db.String(100), primary_key=True)
+    pic_id = db.Column(db.Integer , primary_key=True)
+    category = db.Column(db.String(100))
+    path = db.Column(db.String(1000))
+
+    def __init__(self, category=None, path=None):
+        self.category = category
+        self.path = path
+
+class Templates(db.Model):
+    t_id = db.Column(db.Integer , primary_key=True)
+    category = db.Column(db.String(100))
+    path = db.Column(db.String(1000))
+
+    def __init__(self, category=None, path=None):
+        self.category = category
+        self.path = path
+
+class Layouts(db.Model):
+    l_id = db.Column(db.Integer , primary_key=True)
+    category = db.Column(db.String(100))
     path = db.Column(db.String(1000))
 
     def __init__(self, category=None, path=None):
@@ -88,6 +115,7 @@ def signup():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    global name
     with open('transcript.txt', 'w') as f:
         f.truncate()
         f.close()
@@ -96,16 +124,21 @@ def login():
         user = User.query.filter_by(phone=form.phone.data).first()
         if user:
             if (user.phone, form.phone.data):
-                
+                # peter = User.query.filter_by(name=user.name).first()
+                # name=peter.name
+                session["phone"] = request.form.get("phone")
+                # name=session["phone"]
 
-                return redirect('speech_to_text')
-        return 'Invalid Phone Number'
+                return redirect('mainhome')
+        flash('Invalid Credentials')
     return render_template('login.html', form=form)
 
 @app.route('/')
 def home():
 
-   return render_template('index.html')
+   return redirect('login')
+
+
 
 @app.route('/getfile')
 def getfile():
@@ -122,33 +155,30 @@ def setfalse():
 
 @app.route('/mainhome')
 def mainhome():
-    conn = psycopg2.connect(host="localhost", port = 5432, database="Vocal", user="postgres", password="admin")
-    cur = conn.cursor()
-    cur.execute("SELECT path FROM Pictures")
-    # pic = Pictures.query.filter_by().first()
-    print(cur)
-    rec_data=[]
-    for x in cur.fetchall():
-        print(x)
-        rec_data.append(x[0])
-
-    return render_template('mainhome.html',data=rec_data)
-
-@app.route('/speech_to_text',methods=['GET', 'POST'])
-def speech_to_text():
-    # global count,q
-    global count
+    global count,cur
     count=-1
     print(count)
     with open('transcript.txt', 'w') as f:
         f.truncate()
         f.close()
     user_input='What is the topic of your  powerpoint'
+    cur.execute("select category from templates group by category")
+    # pic = Pictures.query.filter_by().first()
+    rec_data=[]
+    for x in cur.fetchall():
+        print(x)
+        rec_data.append(x[0])
+    return render_template('mainhome.html',fname=user_input,data=rec_data)
+
+@app.route('/speech_to_text',methods=['GET', 'POST'])
+def speech_to_text():
+    global count,name
+    display()
     #talk(user_input) 
     print('jelo')
     
 
-    return render_template('speech_to_text.html',data=q,data2=user_input,filename=name)
+    return render_template('speech_to_text.html',ques=jugad,filename=name)
 
 
 
@@ -162,29 +192,40 @@ def getaudio():
     # return JsonResponse("someDictionary")
 
 slide_layout=[]
+pic_list=[]
+pic_dir={}
 i=0
 n=0
-
+query=picquery=chart_data=None
+jugad=jugad1=None
 def iterate():
-    global i,n,slide_layout,count
+    global i,n,slide_layout,count,jugad
     if i !=n:
         if 'Title' in slide_layout[i]:
-            count=3  
-            print('title')         
+            count=3          
         elif 'subtile' in slide_layout[i]:
             count=4  
-            print('subtitle')
         elif 'Text' in slide_layout[i]:
-            count=5 
-            print('text')   
+            count=5   
+        elif 'Chart' in slide_layout[i]:
+            count=9
+            print('Chart')      
         elif 'Picture' in slide_layout[i]:
-            count=7 
-            print('Picture')    
+            count=7
+            mypath = "static/pics"
+            for root, dirs, files in os.walk(mypath):
+                for file in files:
+                    os.remove(os.path.join(root, file)) 
+            talk('please enter the topic of the picture you want')
+            i+=1 
+            return jsonify({'mystring':"please enter the topic of the picture you want"})
+        jugad=f'please enter data into {slide_layout[i]}'    
         talk(f'please enter data into {slide_layout[i]}')
         i+=1 
-        return jsonify({'mystring':f'please enter data into {slide_layout[i]}'})
+        return jsonify({'mystring':f'please enter data into {slide_layout[i-1]}'})
     else:
         count=1 
+        jugad='slide done,do you want to add more slides?'
         talk('slide done,do you want to add more slides? ')
         return jsonify({'mystring':"slide done do you want to add more slides?"})
           
@@ -194,23 +235,39 @@ def talkFunc(strin):
     talk(strin)
     return jsonify()
 
-li=['Select the template by saying the number','do you have a new slide to add?','choose the layout','what is your title ',
-'do you have a subtitle','what is your subtitle','slide 1 done']
+li=['Select the template by saying the number','choose the layout','choose the layout','',
+]
 @app.route('/listen1')
 def listen1():
     global count
-    global li,obj,title,slide_layout,i,n
+    global li,obj,slide_layout,i,n,query,picquery,pic_list,pic_dir,jugad1,chart_data
     count+=1  
     print(count)
-    
-    
+    display()
+
     if count==0:
+        topic=['science','business']
         data=listen()
-        # add code to display templates 
-        talk(li[count])
+        if 'audio' in data:
+            count=-1  
+            talk("Could not understand audio")
+            return jsonify({'mystring':'Could not understand audio'})
+        elif data in topic:
+            query=data
+            talk(li[count])    
+            return jsonify({'mystring':li[count]})
+        elif 'no topic' in data:
+                obj=CreatePpt('static/0.pptx')
+                count=2
+                talk(li[count-1]) 
+                return jsonify({'mystring':li[count-1]})
+        
+        
+        talk(li[count])    
         return jsonify({'mystring':li[count]})
+
     elif count==1:
-        template={"1":'static/animals.pptx', "2":'static/business.pptx'}
+        template={"1":'static/Business_1.pptx', "2":'static/Business_2.pptx',"3":"static/Science_1.pptx","4":"static/Science_2.pptx"}
         data=listen()
         dataarr=data.split()
         try:
@@ -222,8 +279,10 @@ def listen1():
             obj=CreatePpt(template[data])
             display()
             print('obj created')
-            talk(li[count]) 
-            return jsonify({'mystring':li[count]})
+            count=2
+            talk(li[count-1]) 
+            
+            return jsonify({'mystring':li[count-1]})
         else:
             talk('sorry template not available') 
             count=0
@@ -236,16 +295,17 @@ def listen1():
             talk(li[count])
             return jsonify({'mystring':li[count]})
         elif 'no' in data:
-            count=9    
+            print('thanks')
+            return redirect('/')  
         else:
             talk('sorry did not get you') 
             count=1
             return jsonify({'mystring':'sorry did not get you'})     
 
-    elif count ==3:
+    elif count==3:
         i=0
         data=listen()
-        dic={"0":0,"1":1,"2":2}
+        dic={"0":0,"1":1,"2":2,"3":3,"4":4,"5":5}
         dataarr=data.split()
         try:
             data=dataarr[1]
@@ -295,26 +355,48 @@ def listen1():
             return jsonify({'mystring':'sorry did not get you'})    
         
     elif count ==8:
-        images={"1":'static/1.jpg', "2":'static/2.jpg'}
+            data=listen()
+            if data=='Could not understand audio':
+                count=7  
+                talk("Could not understand audio")
+                return jsonify({'mystring':'Could not understand audio'})
+            else:
+                picquery=data
+                gis.search(search_params={'q': picquery,'num': 5, 'safe': 'medium','fileType': 'jpg,gif,png','imgType': 'photo'}, path_to_dir='static/pics',custom_image_name='pic')
+                pic_list=os.listdir('static/pics')
+                pic_dir = {str(i): f'static/pics/{pic_list[i]}' for i in range(0, len(pic_list))}
+                print(pic_dir)
+                jugad1='choose the Picture by saying the number'
+                talk("choose the Picture by saying the number")
+                return jsonify({'mystring':'choose the Picture by saying the number'})
+
+
+
+    elif count ==9:
+        # images={"1":'static/1.jpg', "2":'static/2.jpg'}
+
         data=listen()
-        # data=data.strip()
         dataarr=data.split()
         data=dataarr[1]
-        if data in images:
-            obj.add_image(i-1,images[data])
+        if data in pic_dir:
+            obj.add_image(i-1,pic_dir[data])
             display()
             return iterate()    
         else:
             talk('Picture not available') 
-            count=7
-            return jsonify({'mystring':'Picture not available'})    
-
-    elif count ==9:
-        talk(li[count])
+            count=8
+            return jsonify({'mystring':'Picture not available'})
 
     elif count==10:
-        talk('thank you')
-        return jsonify({'mystring':"thank you"})
+        data=listen()
+        chart_data=data.split()
+        talk('enter the Y values') 
+        return jsonify({'mystring':'enter the Y values'})
+    elif count==11:
+        data=listen()
+        num_data=data.split()
+        obj.add_chart(chart_data,num_data,i-1)
+        return iterate()
 
 
 
@@ -323,6 +405,64 @@ def display():
         f.write('True')
         f.close()
 
+
+@app.route('/template')
+def template():
+    global count,li,query,cur
+    if query!=None:
+        cur.execute(f"select t_id,path from templates where category='{query}'")
+    else:
+        cur.execute("select t_id,path from templates")    
+    # pic = Pictures.query.filter_by().first()
+    rec_data=[]
+    # num=[]
+    for x in cur.fetchall():
+        print(x)
+        # num.append(x[0])
+        rec_data.append(x[1])
+    return render_template('tempDisplay.html',data=rec_data,q=li[count])
+
+@app.route('/layout')
+def layout():
+    global count,li,query,cur
+    cur.execute("select path from layouts order by l_id")
+    # pic = Pictures.query.filter_by().first()
+    rec_data=[]
+    for x in cur.fetchall():
+        print(x)
+        rec_data.append(x[0])
+    return render_template('layoutDisplay.html',data=rec_data,q=li[count])
+
+@app.route('/picture')
+def picture():
+    global count,li,query,cur,pic_list
+    
+    return render_template('picDisplay.html',data=pic_list,q=jugad1)
+
+# @app.route('/download')
+# def download():
+#     global name
+#     #For windows you need to use drive name [ex: F:/Example.pdf]
+#     path = f"static/{name}.pptx"
+#     return send_file(path, as_attachment=True)
+
+@app.route('/hello')
+def hello():
+    global count,name
+    
+    #talk(user_input) 
+    print('jelo')
+    
+
+    return render_template('hello.html',ques=li[count],filename=name)
+
+
+
+
+@app.route("/logout")
+def logout():
+    session["phone"] = None
+    return redirect("/")
 
 if __name__ == '__main__':
     app.run(host="127.0.0.1",port="80")
