@@ -116,7 +116,7 @@ label {
  
         
     
-    <!-- <button><a href='download'>DOWNLOAD</button> -->
+      <button><a href='download'>DOWNLOAD</button> 
 
 </center>
 
@@ -126,6 +126,7 @@ label {
 <br/>
 
 <script>
+ let a = document.getElementById('question').textContent;
  var myState = {
             pdf: null,
             currentPage: 1,
@@ -138,6 +139,11 @@ label {
             myState.pdf = pdf;
             myState.totalpage=pdf._pdfInfo.numPages;
             render();
+            if(myState.totalpage>1 && myState.totalpage!=myState.currentPage)
+            {
+              myState.currentPage=myState.totalpage;
+              render();
+            }
  
         });
  
@@ -240,6 +246,9 @@ function abcd(){
       let doc = document.getElementById("question")               // the question      
       if (data !== "") {
         doc.innerHTML = data.mystring
+        fetch(`/talkFunc/${doc.innerHTML}`).then(res => res.json()).then(data => {
+     
+    });
         //console.log(data)
       }
       
@@ -278,6 +287,9 @@ setInterval(() => {
     })
   }, 100);
 
+  fetch(`/talkFunc/${a}`).then(res => res.json()).then(data => {
+     
+    });
 </script>
 
   

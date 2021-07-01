@@ -73,14 +73,14 @@ fetch("/talkFunc/What is the topic of your  powerpoint").then(res => res.json())
 setInterval(() => {
    let doc = document.getElementById("transcript").textContent;
     console.log(doc+"here"); 
-    if(doc=='no topic'){
+    if(doc=='blank'){
       window.open("layout","_self")
     }                                     //function to switch between pages
     else if(doc!="" && doc!='Could not understand audio'){
       window.open("template","_self")
     }
     
-  }, 1);    
+  }, 100);    
 
 function abcd(){
   fetch("/listen1").then(res => res.json()).then(data => {
@@ -88,7 +88,9 @@ function abcd(){
       let doc = document.getElementById("question")
       if (data !== "") {
         doc.innerHTML = data.mystring
-        //flag="true"
+        fetch(`/talkFunc/${doc.innerHTML}`).then(res => res.json()).then(data => {
+     
+    });
         console.log(data)
       }
            

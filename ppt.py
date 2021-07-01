@@ -4,10 +4,25 @@ import speech_recognition as sr
 from pptx.util import Inches
 from PIL import Image
 import os
+from pptx.util import Pt
 from flask import session
 from pptx.chart.data import CategoryChartData
 from pptx.enum.chart import XL_CHART_TYPE
+from datetime import datetime
+from pptx.dml.color import RGBColor
+from matplotlib.colors import to_rgb
 name='leroy'
+
+def color_to_rgb(color):
+    """Converts a color to a RGB tuple from (0-255)."""
+    if isinstance(color, tuple):
+        # if a RGB tuple already
+        return color
+    else:
+        # to_rgb() returns colors from (0-1)
+        color = tuple(int(x * 255) for x in to_rgb(color))
+        return color
+
 def talk(audio):
     
     # time.sleep(2)
@@ -47,17 +62,28 @@ def listen():
         f.close()
     return data.lower()
 
+now = datetime.now()
+x=f'{now.day}/{now.month}/{now.year}'
+
 class CreatePpt:
     # global fileName
-    global name
+    global name,x
     def __init__(self,temp=None):
          self.pr1=Presentation(temp) 
+         self.slide_count=0
+         self.footer=None
+
         #  name=session['phone']
         #  print(name+'thsi is naem asdorekokeo')
         #  self.pr1.save("static/{}.pptx".format(name)) 
 
     def make_slide(self,layout):
         self.slide=self.pr1.slides.add_slide(self.pr1.slide_layouts[layout])
+        self.slide_count+=1
+        self.shapes(data=self.slide_count,l=12.6,t=0.3)
+        self.shapes(data=x,l=0.3,t=7)
+        if self.footer!=None:
+            self.shapes(data=self.footer,l=5.3,t=7)
         self.pr1.save("static/{}.pptx".format(name))
         os.system(f'ppt2pdf file static/{name}.pptx')
         print('done')
@@ -69,13 +95,23 @@ class CreatePpt:
 
         return self.l            
 
+    def shapes(self,data,l,t):
+        left =  Inches(l)
+        top =Inches(t)
+        width = height = Inches(3)
+        txBox = self.slide.shapes.add_textbox(left, top, width, height)
+        tf = txBox.text_frame
+        tf.text = str(data)
+
     def add_title(self,title):
         self.title1=self.slide.shapes.title
         self.title1.text=title
+        if self.footer==None:
+            self.footer=title
         self.pr1.save("static/{}.pptx".format(name))
         os.system(f'ppt2pdf file static/{name}.pptx')
         
-
+    
 
     def add_subtitle(self,ph_num,subtitle=""):    
         self.subtitle1=self.slide.placeholders[self.ph[ph_num]]
@@ -93,6 +129,20 @@ class CreatePpt:
         self.pr1.save("static/{}.pptx".format(name))
         os.system(f'ppt2pdf file static/{name}.pptx')
         print("done text")
+
+    def add_font(self,font_name=None,font_color=None,font_size=None,bold=False,italic=False):
+        self.font = self.run.font
+        if font_name!=None:
+            self.font.name=font_name
+        if font_size!=None:
+            self.font.size=Pt(int(font_size))    
+        if font_color!=None:    
+            r,g,b=color_to_rgb(font_color)
+            self.font.color.rgb = RGBColor(r,g,b)
+        self.font.bold = bold
+        self.font.italic= italic    
+        self.pr1.save("static/{}.pptx".format(name))
+        os.system(f'ppt2pdf file static/{name}.pptx')
 
     def add_chart(self,data,num_data,ph_num):
         self.t=self.slide.placeholders[self.ph[ph_num]]

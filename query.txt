@@ -1,0 +1,26 @@
+insert into templates values(5,'wild life','static/Wildlife1');
+insert into templates values(6,'wild life','static/Wildlife2');
+insert into templates values(7,'wild life','static/Domestic1');
+insert into templates values(8,'wild life','static/Domestic2');
+insert into templates values(9,'wild life','static/Domestic3');
+insert into templates values(10,'wild life','static/Domestic4');
+insert into templates values(11,'wild life','static/Aquatic1');
+insert into templates values(12,'wild life','static/Aquatic2');
+insert into templates values(13,'technology','static/Ai1');
+insert into templates values(14,'technology','static/Ai2');
+insert into templates values(15,'technology','static/Technology1');
+insert into templates values(16,'technology','static/Technology2');
+
+insert into templates values(17,'default','static/Default3');
+insert into templates values(18,'default','static/Default7');
+insert into templates values(19,'default','static/Default9');
+
+insert into templates values(20,'default','static/Default1');
+insert into templates values(21,'default','static/Default2');
+insert into templates values(22,'default','static/Default4');
+insert into templates values(23,'default','static/Default5');
+insert into templates values(24,'default','static/Default6');
+insert into templates values(25,'default','static/Default8');
+insert into templates values(26,'default','static/Default10');
+insert into templates values(27,'default','static/Default14');
+insert into templates values(28,'default','static/Default12');

@@ -153,9 +153,10 @@ def setfalse():
         f.close()
     return jsonify({'mystring':'done'}) 
 
+topic_list=[]
 @app.route('/mainhome')
 def mainhome():
-    global count,cur
+    global count,cur,topic_list
     count=-1
     print(count)
     with open('transcript.txt', 'w') as f:
@@ -164,15 +165,17 @@ def mainhome():
     user_input='What is the topic of your  powerpoint'
     cur.execute("select category from templates group by category")
     # pic = Pictures.query.filter_by().first()
-    rec_data=[]
+    # rec_data=[]
+    topic_list.clear()
     for x in cur.fetchall():
         print(x)
-        rec_data.append(x[0])
-    return render_template('mainhome.html',fname=user_input,data=rec_data)
+        if x[0]!='default':
+            topic_list.append(x[0])
+    return render_template('mainhome.html',fname=user_input,data=topic_list)
 
 @app.route('/speech_to_text',methods=['GET', 'POST'])
 def speech_to_text():
-    global count,name
+    global count,name,jugad
     display()
     #talk(user_input) 
     print('jelo')
@@ -216,18 +219,20 @@ def iterate():
             for root, dirs, files in os.walk(mypath):
                 for file in files:
                     os.remove(os.path.join(root, file)) 
-            talk('please enter the topic of the picture you want')
+            # talk('please enter the topic of the picture you want')
             i+=1 
+            jugad=f'please enter data into {slide_layout[i-1]}'
             return jsonify({'mystring':"please enter the topic of the picture you want"})
         jugad=f'please enter data into {slide_layout[i]}'    
-        talk(f'please enter data into {slide_layout[i]}')
+        # talk(f'please enter data into {slide_layout[i]}')
         i+=1 
         return jsonify({'mystring':f'please enter data into {slide_layout[i-1]}'})
     else:
         count=1 
-        jugad='slide done,do you want to add more slides?'
-        talk('slide done,do you want to add more slides? ')
-        return jsonify({'mystring':"slide done do you want to add more slides?"})
+        yo=f'slide {obj.slide_count} done ,do you want to add more slides?'
+        jugad=yo
+        # talk(yo)
+        return jsonify({'mystring':yo})
           
 
 @app.route('/talkFunc/<strin>')    
@@ -235,77 +240,87 @@ def talkFunc(strin):
     talk(strin)
     return jsonify()
 
+def error():
+    global count
+    count-=1  
+    # talk("Could not understand audio")
+    return jsonify({'mystring':'Could not understand audio'})
+
 li=['Select the template by saying the number','choose the layout','choose the layout','',
 ]
 @app.route('/listen1')
 def listen1():
-    global count
-    global li,obj,slide_layout,i,n,query,picquery,pic_list,pic_dir,jugad1,chart_data
+    global count,topic_list
+    global li,obj,slide_layout,i,n,query,picquery,pic_list,pic_dir,jugad1,chart_data,template_list
     count+=1  
     print(count)
     display()
 
     if count==0:
-        topic=['science','business']
         data=listen()
-        if 'audio' in data:
-            count=-1  
-            talk("Could not understand audio")
-            return jsonify({'mystring':'Could not understand audio'})
-        elif data in topic:
+        if data=='could not understand audio':
+            return error()
+        elif data in topic_list:
             query=data
-            talk(li[count])    
-            return jsonify({'mystring':li[count]})
-        elif 'no topic' in data:
+            # talk(li[count])    
+            # return jsonify({'mystring':li[count]})    
+        elif 'blank' in data:
                 obj=CreatePpt('static/0.pptx')
                 count=2
-                talk(li[count-1]) 
+                # talk(li[count-1]) 
                 return jsonify({'mystring':li[count-1]})
-        
-        
-        talk(li[count])    
+        else:
+            query='default'         
+        # talk(li[count])    
         return jsonify({'mystring':li[count]})
 
     elif count==1:
-        template={"1":'static/Business_1.pptx', "2":'static/Business_2.pptx',"3":"static/Science_1.pptx","4":"static/Science_2.pptx"}
+        template = {str(i): template_list[i]+'.pptx' for i in range(0, len(template_list))}
+        # template={"1":'static/Business_1.pptx', "2":'static/Business_2.pptx',"3":"static/Science_1.pptx","4":"static/Science_2.pptx"}
         data=listen()
+        if data=='could not understand audio':
+            return error()
         dataarr=data.split()
         try:
             data=dataarr[1]
         except:
             data=dataarr[0]    
         print(data)
+        
         if data in template:
             obj=CreatePpt(template[data])
             display()
             print('obj created')
             count=2
-            talk(li[count-1]) 
-            
+            # talk(li[count-1])  
             return jsonify({'mystring':li[count-1]})
         else:
-            talk('sorry template not available') 
+            # talk('sorry template not available') 
             count=0
             return jsonify({'mystring':'sorry template not available'})   
             
                        
     elif count==2:
         data=listen()
-        if 'yes' in data:
-            talk(li[count])
+        if data=='could not understand audio':
+            return error()
+        elif 'yes' in data:
+            # talk(li[count])
             return jsonify({'mystring':li[count]})
         elif 'no' in data:
             print('thanks')
             return redirect('/')  
         else:
-            talk('sorry did not get you') 
+            # talk('sorry did not get you') 
             count=1
             return jsonify({'mystring':'sorry did not get you'})     
 
     elif count==3:
         i=0
         data=listen()
-        dic={"0":0,"1":1,"2":2,"3":3,"4":4,"5":5}
+        if data=='could not understand audio':
+            return error() 
+        dic={"0":0,"1":1,"2":2,"3":3,"4":4,"5":5,"6":6,"7":7}
         dataarr=data.split()
         try:
             data=dataarr[1]
@@ -318,18 +333,21 @@ def listen1():
             n=len(slide_layout)
             return iterate()
         else:
-            talk('layout not available') 
+            # talk('layout not available') 
             count=2
             return jsonify({'mystring':'layout not available'})
 
     elif count==4:       
         data=listen()
+        if data=='could not understand audio':
+            return error()
         obj.add_title(data)
         display()
         return iterate()
     elif count==5:
         data=listen()
-        print('subtitle')
+        if data=='could not understand audio':
+            return error()
         obj.add_subtitle(i-1,data)  # i-1 because i is incremented in iterate function
         display()
         return iterate() 
@@ -337,37 +355,46 @@ def listen1():
         
     elif count==6:
         data=listen()
+        if data=='could not understand audio':
+            return error() 
         obj.add_text(i-1,data)
         display()
-        talk('Do you have more text to add') 
-        return jsonify({'mystring':'Do you have more text to add'})
+        # talk('Do you want to change font ?') 
+        return jsonify({'mystring':'Do you want to change font ?'})
     elif count==7:
         data=listen()
-        if 'yes' in data:
-            count=5
-            talk('next point?') 
-            return jsonify({'mystring':'next point?'})
+        if data=='could not understand audio':
+            return error()
+        elif 'yes' in data:
+            count=11
+            # talk('please Mention font changes ') 
+            return jsonify({'mystring':'please Mention font changes '})
+            # count=5
+            # talk('next point?') 
+            # return jsonify({'mystring':'next point?'})
         elif 'no' in data:
-            return iterate()    
+            # talk('do you have more text to add?')
+            count=12
+            return jsonify({'mystring':'do you have more text to add?'})
+            
+            # return iterate()    
         else:
-            talk('sorry did not get you') 
+            # talk('sorry did not get you') 
             count=6
             return jsonify({'mystring':'sorry did not get you'})    
         
     elif count ==8:
             data=listen()
-            if data=='Could not understand audio':
-                count=7  
-                talk("Could not understand audio")
-                return jsonify({'mystring':'Could not understand audio'})
+            if data=='could not understand audio':
+                return error()
             else:
                 picquery=data
-                gis.search(search_params={'q': picquery,'num': 5, 'safe': 'medium','fileType': 'jpg,gif,png','imgType': 'photo'}, path_to_dir='static/pics',custom_image_name='pic')
+                gis.search(search_params={'q': picquery,'num': 10, 'safe': 'medium','fileType': 'jpg,gif,png','imgType': 'photo'}, path_to_dir='static/pics',custom_image_name='pic')
                 pic_list=os.listdir('static/pics')
                 pic_dir = {str(i): f'static/pics/{pic_list[i]}' for i in range(0, len(pic_list))}
                 print(pic_dir)
                 jugad1='choose the Picture by saying the number'
-                talk("choose the Picture by saying the number")
+                # talk("choose the Picture by saying the number")
                 return jsonify({'mystring':'choose the Picture by saying the number'})
 
 
@@ -376,6 +403,8 @@ def listen1():
         # images={"1":'static/1.jpg', "2":'static/2.jpg'}
 
         data=listen()
+        if data=='could not understand audio':
+            return error()
         dataarr=data.split()
         data=dataarr[1]
         if data in pic_dir:
@@ -383,68 +412,131 @@ def listen1():
             display()
             return iterate()    
         else:
-            talk('Picture not available') 
+            # talk('Picture not available') 
             count=8
             return jsonify({'mystring':'Picture not available'})
 
     elif count==10:
         data=listen()
+        if data=='could not understand audio':
+            return error()
         chart_data=data.split()
-        talk('enter the Y values') 
+        # talk('enter the Y values') 
         return jsonify({'mystring':'enter the Y values'})
     elif count==11:
         data=listen()
+        if data=='could not understand audio':
+            return error()
         num_data=data.split()
         obj.add_chart(chart_data,num_data,i-1)
+        display()
         return iterate()
 
+    elif count==12:
+        data=listen()
+        if data=='could not understand audio':
+            return error()
+        font=color=size=bold=italic=None
+        fonts=['georgia','times new roman','verdana','sill sans mt']
+        colors=['red','blue','green','yellow']
+        for f in fonts:
+            if f in data: 
+                font=f
+                flag=True
+        for f in colors:
+            if f in data:
+                color=f
+                flag=True 
+        d=data.split()
+        for f in d:
+            if f.isnumeric():
+                size=f
+                flag=True       
+        if 'bold' in data:
+            bold=True
+            flag=True
+        elif 'italic' in data:
+            italic=True
+            flag=True
+        obj.add_font(font_name=font,font_color=color,font_size=size,bold=bold,italic=italic)       
+        display()
 
+        if flag!=True:
+            # talk('sorry did not get you') 
+            count=11
+            return jsonify({'mystring':'sorry did not get you'})   
+        # talk('do you have more text to add?') 
+        # count=13
+        return jsonify({'mystring':'do you have more text to add?'})
+
+    elif count==13:
+        data=listen()
+        if data=='could not understand audio':
+            return error()
+        elif 'yes' in data:
+            count=5
+            # talk('next point?') 
+            return jsonify({'mystring':'next point?'})  
+        elif 'no' in data:
+            return iterate()    
 
 def display():
     with open('file.txt','w') as f:
         f.write('True')
         f.close()
 
-
+template_list=[] 
+cou=ta=0
 @app.route('/template')
 def template():
-    global count,li,query,cur
+    global count,li,query,cur,cou,template_list
+    cou+=1
+    print('called.....................................',cou)
     if query!=None:
-        cur.execute(f"select t_id,path from templates where category='{query}'")
-    else:
-        cur.execute("select t_id,path from templates")    
+        cur.execute(f"select path from templates where category='{query}'")
+    # else:
+    #     cur.execute("select path from templates")    
     # pic = Pictures.query.filter_by().first()
-    rec_data=[]
+    rec_data=[] 
     # num=[]
+    template_list.clear()
     for x in cur.fetchall():
         print(x)
         # num.append(x[0])
-        rec_data.append(x[1])
-    return render_template('tempDisplay.html',data=rec_data,q=li[count])
+        new=x[0]+'.png'
+        template_list.append(x[0])
+        rec_data.append(new)
+    # cur.close()    
+    return render_template('tempDisplay.html',data=rec_data,q=li[count],len=len(rec_data))
 
 @app.route('/layout')
 def layout():
-    global count,li,query,cur
+    global count,li,query,cur,ta
+    ta+=1
+    print('called layout.....................................',ta)
     cur.execute("select path from layouts order by l_id")
     # pic = Pictures.query.filter_by().first()
     rec_data=[]
     for x in cur.fetchall():
         print(x)
         rec_data.append(x[0])
+    # cur.close()    
     return render_template('layoutDisplay.html',data=rec_data,q=li[count])
 
 @app.route('/picture')
 def picture():
     global count,li,query,cur,pic_list
+    # num=[i for i in range(0,len(pic_list))]
+    # print(num)
     
-    return render_template('picDisplay.html',data=pic_list,q=jugad1)
+    return render_template('picDisplay.html',data=pic_list,q=jugad1,len=len(pic_list))
 
-# @app.route('/download')
-# def download():
-#     global name
-#     #For windows you need to use drive name [ex: F:/Example.pdf]
-#     path = f"static/{name}.pptx"
-#     return send_file(path, as_attachment=True)
+@app.route('/download')
+def download():
+    global name
+    #For windows you need to use drive name [ex: F:/Example.pdf]
+    path = f"static/{name}.pptx"
+    return send_file(path, as_attachment=True)
 
 @app.route('/hello')
 def hello():
