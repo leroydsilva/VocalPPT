@@ -7,11 +7,131 @@
     <!-- Compiled and minified JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 <style>
-body  {
 
-  background-color: black;
-}
+  * {
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    color: teal;
+    font-size: 2rem;
+    background-image: linear-gradient(to right, rgb(68, 1, 88) , rgb(9, 0, 12));
+  }
+  
+  .container {
+    padding: 1rem;
+  }
+  .container .img-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(25rem, 1fr));
+    grid-gap: 1rem;
+    transform: scale(1.1);
+    transition: 0.3s;
+  }
+  .container .img-grid .img-box:hover {
+    width: 100%;
+    height: 100%;
+    border-radius: 0.5rem;
+    border: 0.1rem solid teal;
+    box-sizing: border-box;
+    overflow: hidden;
+    transform: scale(1.1);
+    transition: 0.3s;
+  }
+  .container .img-grid .img-box .img-timg {
+    width: 100%;
+    height: calc(100% + 1rem);
+    object-fit: cover;
+  }
+  .container .img-grid .img-box .img-timg:hover {
+    cursor: pointer;
+  }
+  .container .modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    padding-top: 3rem;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background: rgba(0, 0, 0, 0.9);
+  }
+  .container .modal .close, .container .modal .previous, .container .modal .next {
+    position: absolute;
+    color: gray;
+    opacity: 0.7;
+    user-select: none;
+  }
+  .container .modal .close:hover, .container .modal .previous:hover, .container .modal .next:hover {
+    cursor: pointer;
+    opacity: 1;
+    transition: 200ms ease-in;
+  }
+  .container .modal .close {
+    font-size: 3rem;
+    font-weight: bold;
+    top: 1rem;
+    left: 2rem;
+  }
+  .container .modal .previous {
+    font-size: 4rem;
+    top: 37%;
+    left: 2rem;
+  }
+  .container .modal .next {
+    font-size: 4rem;
+    top: 37%;
+    right: 2rem;
+  }
+  .container .modal .modal-content {
+    margin: auto;
+    display: block;
+    width: auto;
+    height: 80%;
+    border: 0.1rem solid teal;
+    border-radius: 0.5rem;
+  }
+  .container .modal .caption {
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 1rem;
+    font-style: italic;
+    text-align: center;
+    color: gray;
+    margin-top: 1rem;
+  }
+  
+  @media (max-width: 1100px) {
+    .container .modal .previous, .container .modal .next {
+      display: none;
+    }
+  }
+  @media (max-width: 1024px) {
+    .container {
+      padding: 0;
+    }
+    .container .modal .modal-content {
+      width: 96%;
+      height: auto;
+      margin-top: 2rem;
+    }
+  }
+  
+  body {
+    background-image: linear-gradient(to right, rgb(68, 1, 88) , rgb(9, 0, 12));
+    font-family: courier;
+  }
+  body h1,h4 {
+    color: #fff;
+    text-align: center;
+    font-size: 40px;
+  }
+
 #question{
   color: white;
 }
@@ -41,16 +161,88 @@ label {
 }
 
 .button5 {font-size: 24px;}
+
+.checkbox {
+  display: none;
+}
+
+.checkbox + label {
+  --size: 50%;
+  --radius: 50%;
+  border: 3px solid white;
+  border-radius: var(--radius);
+  cursor: pointer;
+  display: inline-block;
+  height: 100px;
+  width: 100px;
+  position: relative;
+}
+
+.checkbox + label:before {
+  background-color: red;
+  border-radius: var(--radius);
+  bottom: 0;
+  content: '';
+  height: var(--size);
+  left: 0;
+  margin: auto;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transition: all .25s cubic-bezier(1, 0, 0, 0.2);
+  width: var(--size);
+}
+
+.checkbox:checked + label {
+  animation: .15s ripple .25s;
+}
+
+.checkbox:checked + label:before {
+  --size: 50%;
+  --radius: 10%;
+  transform: rotateZ(180deg);
+}
+
+.line-1{
+  
+  top: 50%;  
+  width: 24em;
+  margin: 0 auto;
+  border-right: 2px solid rgba(255,255,255,.75);
+  font-size: 40px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  transform: translateZ(-50%);    
+  font-family: 'Anonymous Pro', monospace;  
+  color: white;
+  overflow: hidden;
+}
+
+/* Animation */
+.anim-typewriter{
+animation: typewriter 4s steps(44) 1s 1 normal both,
+           blinkTextCursor 500ms steps(44) infinite normal;
+}
+@keyframes typewriter{
+from{width: 0;}
+to{width: 24em;}
+}
+@keyframes blinkTextCursor{
+from{border-right-color: rgba(255,255,255,.75);}
+to{border-right-color: transparent;}
+}
 </style>
 </head>
 <body>
 <center>
-<h4 id='question'>{{q}}</h4>
+<!-- <h4 id='question'>{{q}}</h4> -->
+<p id='question' class="line-1 anim-typewriter">{{q}}</p>
 </center> 
 </br>
 </br>
 </br>
-    <div class="row">
+    <!-- <div class="row">
     {% if data%}
         {% for o in data %} 
           <img src='{{o}}'width="300" height="300" class='img-frame'>
@@ -59,29 +251,70 @@ label {
     {% else %}   
         <h1> pictures not available </h1>   
     </div>
-    {% endif %}
-    <center>
-    <div >
-        <p id="transcript" style="color:white;font-size:50px;font-weight: bold;"></p>
+    {% endif %} -->
+    <div class="container">
+      <div class="img-grid">
+        {% for o in data %}
+        <div >
+        <div class="img-box">
+          <img 
+            class="img-timg"
+            src="{{o}}" 
+            alt="">
+        </div>
+      </div>
+        {% endfor %}
+       
+      </div>
+  
+      
     </div>
-        <button class="btn waves-effect waves-light" type="hidden" onclick='abcd()'>RECORD
+    <center>
+    <!-- <div >
+        <p id="transcript" style="color:white;font-size:50px;font-weight: bold;"></p>
+    </div> -->
+        <!-- <button class="btn waves-effect waves-light" type="hidden" onclick='abcd()'>RECORD -->
+          <!-- <input type="checkbox" name="checkbox" class="checkbox" id="checkbox">
+          <label onclick='abcd()' for="checkbox"></label> -->
+          <!-- <div class="micbutton" onclick='abcd()'>
+            <lottie-player src="https://assets2.lottiefiles.com/packages/lf20_48aAPN.json"  background="transparent"  speed="1"  style="width: 200px; height: 200px;"  stop></lottie-player>
+          </div> -->
+
+          <div class="col-12" style=" width:100%;height:28%; display:flex; flex-direction:row; padding:20px;margin:auto; justify-content:space-between;position: fixed; z-index:100; bottom:0px; background: rgba(0,0,0,0.4);">
+            <div style="margin:10px" >
+                <p id="transcript" style="color:white;font-size:40px;font-weight: bold;"></p>
+            </div>
+            <div style="display:flex; margin:auto;margin-right:20px;">
+              <div class="micbutton" onclick='abcd()'>
+                <lottie-player src="https://assets2.lottiefiles.com/packages/lf20_48aAPN.json"  background="transparent"  speed="1"  style="width: 200px; height: 200px;"  stop></lottie-player>
+              </div>
+            </div>
+          </div>
     </center>   
 </body>
 <script>
   let a=document.getElementById('question').textContent;
 
-function abcd(){
-  fetch("/listen1").then(res => res.json()).then(data => {
+  async function abcd(){
+    const micdiv=document.querySelector('.micbutton');
+    const mic=`
+  <lottie-player src="https://assets2.lottiefiles.com/packages/lf20_48aAPN.json"  background="transparent"  speed="1"  style="width: 200px; height: 200px;"  loop  autoplay></lottie-player>`;
+  micdiv.innerHTML=mic;
+  await fetch("/listen1").then(res => res.json()).then(async data => {
       console.log('listen')
       let doc = document.getElementById("question")
       let b='';
       if (data !== "") {
-        doc.innerHTML = data.mystring
-      
+        doc.innerHTML = data.mystring;
+        
         console.log(data)
+        const micdiv=document.querySelector('.micbutton');
+        const mic=`
+        <lottie-player src="https://assets2.lottiefiles.com/packages/lf20_48aAPN.json"  background="transparent"  speed="1"  style="width: 200px; height: 200px;"  stop></lottie-player>`;
+        micdiv.innerHTML=mic;
       }
       if(b!=doc){
-        fetch(`/talkFunc/${doc.innerHTML}`).then(res => res.json()).then(data => {
+      await  fetch(`/talkFunc/${doc.innerHTML}`).then(res => res.json()).then(data => {
      
     });
         b=doc;
@@ -94,7 +327,6 @@ setInterval(() => {
       let doc = document.getElementById("transcript")
       if (data !== "") {
         doc.innerHTML = data.mystring
-      
         console.log(data)
       }
     })
@@ -108,9 +340,8 @@ setInterval(() => {
     }
   }, 100);  
 
-  fetch(`/talkFunc/${a}`).then(res => res.json()).then(data => {
+   fetch(`/talkFunc/${a}`).then(res => res.json()).then(data => {
      
     });
-    
 </script>
 </html>

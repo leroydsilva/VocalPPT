@@ -8,11 +8,8 @@
     <!-- Compiled and minified JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 <style>
-body  {
-
-  background-color: #FFFF;
-}
 
 
 .button {
@@ -33,23 +30,286 @@ label {
 }
 
 .button5 {font-size: 24px;}
+input:focus {
+  outline: none;
+}
+
+body h1,h3 {
+  color: #fff;
+  text-align: center;
+  font-size: 40px;
+}
+body #inputDiv {
+  text-align: center;
+}
+body #inputDiv #todoInput {
+  font-size: 30px;
+  width: 80%;
+  border: none;
+  font-family: courier;
+  font-weight: bold;
+  background: #000;
+  box-shadow: 0 0 4px #000;
+  color: #fff;
+}
+body #inputDiv #todoInput:focus {
+  box-shadow: 0 0 8px #000;
+}
+body #inputDiv #todoInput::placeholder {
+  color: #fff;
+}
+body #inputDiv #add_todo {
+  font-size: 30px;
+  font-weight: bold;
+  background: #000;
+  padding-left: 5px;
+  padding-right: 5px;
+  cursor: pointer;
+  box-shadow: 0 0 4px #000;
+  color: #fff;
+}
+body #inputDiv #add_todo:hover {
+  box-shadow: 0 0 8px #000;
+}
+body #listDiv {
+  position: absolute;
+  width: 80%;
+  transform: translateX(-55%);
+  left: 50%;
+  top: 140px;
+}
+body #listDiv .crossButton {
+  right: 0px;
+  position: absolute;
+  cursor: pointer;
+  background: #f00;
+  text-align: center;
+  padding: 10px;
+  transform: translate(-50%, -25%);
+  -ms-transform: translate(-50%, -25%);
+}
+body #listDiv .crossButton:hover {
+  box-shadow: 0 0 8px #f00;
+}
+body #listDiv .strikeButton {
+  right: 35px;
+  position: absolute;
+  cursor: pointer;
+  background: #f00;
+  text-align: center;
+  padding: 10px;
+  transform: translate(-50%, -25%);
+  -ms-transform: translate(-50%, -25%);
+}
+body #listDiv .strikeButton:hover {
+  box-shadow: 0 0 8px #f00;
+}
+ul {
+  list-style: none;
+}
+ul li {
+  color: #fff;
+  left: 50%;
+  background: #000;
+  padding: 20px;
+  margin-top: 5px;
+  box-shadow: 0 0 4px #000;
+}
+.stricked {
+  text-decoration: line-through;
+}
+
+/* function */
+@keyframes ripple {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.02);
+  }
+}
+
+/* main */
+body {
+  background-image: linear-gradient(to right, rgb(68, 1, 88) , rgb(9, 0, 12));
+  display: grid;
+  height: 100vh;
+  
+}
+
+/* component */
+.checkbox {
+  display: none;
+}
+
+.checkbox + label {
+  --size: 50%;
+  --radius: 50%;
+  border: 3px solid white;
+  border-radius: var(--radius);
+  cursor: pointer;
+  display: inline-block;
+  height: 100px;
+  width: 100px;
+  position: relative;
+}
+
+.checkbox + label:before {
+  background-color: red;
+  border-radius: var(--radius);
+  bottom: 0;
+  content: '';
+  height: var(--size);
+  left: 0;
+  margin: auto;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transition: all .25s cubic-bezier(1, 0, 0, 0.2);
+  width: var(--size);
+}
+
+.checkbox:checked + label {
+  animation: .15s ripple .25s;
+}
+
+.checkbox:checked + label:before {
+  --size: 50%;
+  --radius: 10%;
+  transform: rotateZ(180deg);
+}
+.circle {
+  width: 200px;
+  height: 200px;
+  line-height: 200px;
+  border-radius: 50%; /* the magic */
+  -moz-border-radius: 50%;
+  -webkit-border-radius: 50%;
+  text-align: center;
+  color: white;
+  font-size: 16px;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin: 0 auto 40px;
+  display: inline-block;
+  
+}
+
+.blue {
+  background-color: #3498db;  
+}
+
+.container {
+  width:98%;
+  height: 100%;
+  margin: 0 auto;
+
+  position: relative;
+}
+.line-1{
+  
+  top: 50%;  
+  width: 24em;
+  margin: 0 auto;
+  border-right: 2px solid rgba(255,255,255,.75);
+  font-size: 40px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  transform: translateY(-50%);    
+  font-family: 'Anonymous Pro', monospace;  
+  color: white;
+  overflow: hidden;
+}
+
+/* Animation */
+.anim-typewriter{
+animation: typewriter 4s steps(44) 1s 1 normal both,
+           blinkTextCursor 500ms steps(44) infinite normal;
+}
+@keyframes typewriter{
+from{width: 0;}
+to{width: 24em;}
+}
+@keyframes blinkTextCursor{
+from{border-right-color: rgba(255,255,255,.75);}
+to{border-right-color: transparent;}
+}
+
+.button {
+  text-align: center;
+  cursor: pointer;
+  padding: 1rem 3rem;
+  display: inline-block;
+  border-radius: 3px;
+  margin: 1rem;
+  text-decoration: none;
+  font-family: system-ui;
+  font-size: 16px;
+  text-transform: uppercase;
+  color: #fff !important;
+  background-image: linear-gradient(-45deg, #f761a1 0, #8c1bab 100%);
+  box-shadow: 0 3px 13px 0 rgba(14, 9, 73, 0.2), 0 11px 21px 0 rgba(255, 166, 220, 0.004);
+}
+
+.floating {  
+  animation-name: floating;
+  animation-duration: 3s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+  margin-left: 30px;
+  margin-top: 5px;
+}
+
+@keyframes floating {
+  from { transform: translate(0,  0px); }
+  65%  { transform: translate(0, 15px); }
+  to   { transform: translate(0, -0px); }    
+}
 </style>
 </head>
 <body>
 
 <center>
-<h1> VOCAL PPT </h1>
-<h3 id='question'> {{fname}} </h3>
+<h1><img src="{{url_for('static', filename='Vocal_logo.png')}}" alt="logo" class="logo"> </h1>
+<!-- <h3>{{fname}}</h3> -->
+<p class="line-1 anim-typewriter" id='question'>{{fname}}</p>
+<!-- <h3 id='question'> {{fname}} </h3> -->
 <br/>
-<h3> topics available are </h3>
-<br/>
+<p class=""><h3>Templates available for these set of topics </h3></p>
+</center>
+<!-- <br/>
 {% for o in data %} 
        <h4 class='row'> {{o}} </h4>
     
    {% endfor %}
-<br/>   
+<br/>    -->
+
+<!-- {% for o in data %} 
+<ul>
+  <li>{{o}}</li>
+  
+  
+</ul>
+{% endfor %} -->
+<div class="container" style="display:flex; flex-direction:row;flex-wrap: wrap;justify-content: center;">  
+  <div class="floating">
+{% for o in data %} 
+
+  <!-- <div style="position:relative;">
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+<div style="display:flex;margin:auto;justify-content:center;">
+<lottie-player src="https://assets3.lottiefiles.com/packages/lf20_ozcy5rr3.json"  background="transparent"  speed="1"  style="width: 300px; height: 300px;"  loop  autoplay></lottie-player>
+ </div>
+    <div class="" style="position:absolute; top:50%;left:50%;z-index:100 ;color:white;font-size:30px;margin-left:-20px" >{{o}}</div>
+  </div> -->
+  <a href="" class="button" data-micron=bounce>{{o}}</a>
+{% endfor %}
+</div>
+</div>
+<center>
 <div >
-    <p id="transcript" style="color:black;font-size:50px;font-weight: bold;"></p>
+    <p id="transcript" style="color:white;font-size:50px;font-weight: bold;"></p>
 </div>
 <br/>
 </center>
@@ -60,14 +320,21 @@ label {
     </div>
 
 <center>
-<button class="btn waves-effect waves-light" type="hidden" onclick='abcd()'>RECORD
+<div class="micbutton" onclick='abcd()'>
+  
+<lottie-player src="https://assets2.lottiefiles.com/packages/lf20_48aAPN.json"  background="transparent"  speed="1"  style="width: 200px; height: 200px;"  stop></lottie-player>
+  <!-- <input type="checkbox" name="checkbox" class="checkbox" id="checkbox">
+<label onclick='abcd()' for="checkbox"></label> -->
+<!-- <button class="btn waves-effect waves-light" type="hidden" onclick='abcd()'>RECORD -->
+</div>
 </center>
 
 </body>
 <script>
-fetch("/talkFunc/What is the topic of your  powerpoint").then(res => res.json()).then(data => {
+let a=document.getElementById('question').textContent;
+fetch(`/talkFunc/${a}`).then(res => res.json()).then(data => {
      
-    });
+    });  
 
 
 setInterval(() => {
@@ -82,8 +349,13 @@ setInterval(() => {
     
   }, 100);    
 
-function abcd(){
-  fetch("/listen1").then(res => res.json()).then(data => {
+async function abcd(){
+   
+  const micdiv=document.querySelector('.micbutton');
+  const mic=`
+<lottie-player src="https://assets2.lottiefiles.com/packages/lf20_48aAPN.json"  background="transparent"  speed="1"  style="width: 200px; height: 200px;"  loop  autoplay></lottie-player>`;
+micdiv.innerHTML=mic;
+  await fetch("/listen1").then(res => res.json()).then(data => {
       console.log('listen')
       let doc = document.getElementById("question")
       if (data !== "") {
@@ -92,6 +364,11 @@ function abcd(){
      
     });
         console.log(data)
+        const micdiv=document.querySelector('.micbutton');
+        //<!-- await sleep(2000) --> speech to text
+  const mic=`
+<lottie-player src="https://assets2.lottiefiles.com/packages/lf20_48aAPN.json"  background="transparent"  speed="1"  style="width: 200px; height: 200px;"  stop></lottie-player>`;
+micdiv.innerHTML=mic;
       }
            
     })

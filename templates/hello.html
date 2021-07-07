@@ -5,9 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>My PDF Viewer</title>
-  <script
-    src="http://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.0.943/pdf.min.js">
-  </script>
+  
  
   <style>
       #canvas_container {
@@ -24,25 +22,66 @@
   </style>
 </head>
 <body>
-     <div id="my_pdf_viewer">
-        <div id="canvas_container">
-            <canvas id="pdf_renderer"></canvas>
-        </div>
+    <h1> VOCAL PPT </h1>
+    <h3 id='question'> {{ques}} </h3>
+    <br/>
  
-        <!-- <div id="navigation_controls">
-            <button id="go_previous">Previous</button>
-            <input id="current_page" value="1" type="number"/>
-            <button id="go_next">Next</button>
-        </div>
- 
-        <div id="zoom_controls">  
-            <button id="zoom_in">+</button>
-            <button id="zoom_out">-</button>
-        </div> -->
+     <div >
+    <p id="transcript" style="color:black;font-size:50px;font-weight: bold;"></p>
     </div>
- 
+    <br/>
+    </center>
+    <center>
+        <button class="btn waves-effect waves-light" type="hidden" onclick='abcd()'>RECORD
+    </center>
+
+</body>
     <script>
+    let a=document.getElementById('question').textContent;
+    fetch(`/talkFunc/${a}`).then(res => res.json()).then(data => {
      
+    });
+
+setInterval(() => {
+   let doc = document.getElementById("transcript").textContent;
+    console.log(doc+"here"); 
+                                         //function to switch between pages
+    if(doc=='new'){
+      window.open("mainhome","_self")
+    }
+    if(doc=='resume'){
+        window.open("speech_to_text","_self")
+    }
+    
+  }, 100);    
+
+function abcd(){
+  fetch("/listen1").then(res => res.json()).then(data => {
+      console.log('listen')
+      let doc = document.getElementById("question")
+      if (data !== "") {
+        doc.innerHTML = data.mystring
+        console.log(data)
+      }
+      if(b!=doc){
+        fetch(`/talkFunc/${doc.innerHTML}`).then(res => res.json()).then(data => {
+     
+    });
+        b=doc;
+      }
+           
+    })
+}
+
+setInterval(() => {
+    fetch("/getaudio").then(res => res.json()).then(data => {
+      let doc = document.getElementById("transcript")
+      if (data !== "") {                                          //function to display the user voice
+        doc.innerHTML = data.mystring
+        console.log(data)
+      }
+    })
+  }, 100);
  
         
     </script>

@@ -21,7 +21,7 @@ database_uri = 'postgresql+psycopg2://{dbuser}:{dbpass}@{dbhost}/{dbname}'.forma
     dbname="Vocal"
 )
 
-name='leroy'
+name='ronaldo'
 count=-1
 obj=''
 
@@ -102,7 +102,7 @@ def signup():
         new_user = User(name=form.username.data, phone=form.phone.data)
         db.session.add(new_user)
         db.session.commit()
-        return '<h1>New user created</h1>'
+        return redirect('login')
     return render_template('signup.html', form=form)
 
 # @app.route('/getaudiologin')    
@@ -124,8 +124,8 @@ def login():
         user = User.query.filter_by(phone=form.phone.data).first()
         if user:
             if (user.phone, form.phone.data):
-                # peter = User.query.filter_by(name=user.name).first()
-                # name=peter.name
+                peter = User.query.filter_by(name=user.name).first()
+                name=peter.name
                 session["phone"] = request.form.get("phone")
                 # name=session["phone"]
 
@@ -153,6 +153,21 @@ def setfalse():
         f.close()
     return jsonify({'mystring':'done'}) 
 
+
+@app.route('/hello')
+def hello():
+    global count,name
+    
+    with open('transcript.txt', 'w') as f:
+        f.truncate()
+        f.close()
+    #talk(user_input) 
+    print('jelo')
+    question=f'welcome {name}, to Vocal Power Point. Please select new or resume '
+    
+
+    return render_template('hello.html',ques=question,filename=name)
+
 topic_list=[]
 @app.route('/mainhome')
 def mainhome():
@@ -162,7 +177,7 @@ def mainhome():
     with open('transcript.txt', 'w') as f:
         f.truncate()
         f.close()
-    user_input='What is the topic of your  powerpoint'
+    user_input=f'Hey {name}, What is the topic of your powerpoint'
     cur.execute("select category from templates group by category")
     # pic = Pictures.query.filter_by().first()
     # rec_data=[]
@@ -173,15 +188,7 @@ def mainhome():
             topic_list.append(x[0])
     return render_template('mainhome.html',fname=user_input,data=topic_list)
 
-@app.route('/speech_to_text',methods=['GET', 'POST'])
-def speech_to_text():
-    global count,name,jugad
-    display()
-    #talk(user_input) 
-    print('jelo')
-    
 
-    return render_template('speech_to_text.html',ques=jugad,filename=name)
 
 
 
@@ -217,11 +224,11 @@ def iterate():
             count=7
             mypath = "static/pics"
             for root, dirs, files in os.walk(mypath):
-                for file in files:
-                    os.remove(os.path.join(root, file)) 
+                for filea in files:
+                    os.remove(os.path.join(root, filea)) 
             # talk('please enter the topic of the picture you want')
             i+=1 
-            jugad=f'please enter data into {slide_layout[i-1]}'
+            jugad=f'please enter the topic of the picture you want'
             return jsonify({'mystring':"please enter the topic of the picture you want"})
         jugad=f'please enter data into {slide_layout[i]}'    
         # talk(f'please enter data into {slide_layout[i]}')
@@ -250,11 +257,24 @@ li=['Select the template by saying the number','choose the layout','choose the l
 ]
 @app.route('/listen1')
 def listen1():
-    global count,topic_list
+    global count,topic_list,jugad,name
     global li,obj,slide_layout,i,n,query,picquery,pic_list,pic_dir,jugad1,chart_data,template_list
     count+=1  
     print(count)
-    display()
+    
+
+    # if count==-1:
+    #     data=listen()
+    #     if data=='could not understand audio':
+    #         return error()
+    #     elif 'new' in data:
+    #          return jsonify({'mystring':'What is the topic of your powerpoint?'})
+    #     elif 'resume' in data:
+    #         count=1
+    #         obj=CreatePpt(f'static/{name}.pptx')
+    #         jugad='do you want to add new slide?'
+    #         return jsonify({'mystring':jugad})
+
 
     if count==0:
         data=listen()
@@ -265,7 +285,7 @@ def listen1():
             # talk(li[count])    
             # return jsonify({'mystring':li[count]})    
         elif 'blank' in data:
-                obj=CreatePpt('static/0.pptx')
+                obj=CreatePpt('static/0.pptx',name=name) #changes are left here
                 count=2
                 # talk(li[count-1]) 
                 return jsonify({'mystring':li[count-1]})
@@ -288,7 +308,7 @@ def listen1():
         print(data)
         
         if data in template:
-            obj=CreatePpt(template[data])
+            obj=CreatePpt(template[data],name=name)
             display()
             print('obj created')
             count=2
@@ -309,7 +329,7 @@ def listen1():
             return jsonify({'mystring':li[count]})
         elif 'no' in data:
             print('thanks')
-            return redirect('/')  
+            return jsonify({'mystring':f'Thanks {name} for using Vocal PPT'})  
         else:
             # talk('sorry did not get you') 
             count=1
@@ -369,15 +389,12 @@ def listen1():
             count=11
             # talk('please Mention font changes ') 
             return jsonify({'mystring':'please Mention font changes '})
-            # count=5
-            # talk('next point?') 
-            # return jsonify({'mystring':'next point?'})
+            
         elif 'no' in data:
             # talk('do you have more text to add?')
             count=12
             return jsonify({'mystring':'do you have more text to add?'})
-            
-            # return iterate()    
+               
         else:
             # talk('sorry did not get you') 
             count=6
@@ -389,7 +406,7 @@ def listen1():
                 return error()
             else:
                 picquery=data
-                gis.search(search_params={'q': picquery,'num': 10, 'safe': 'medium','fileType': 'jpg,gif,png','imgType': 'photo'}, path_to_dir='static/pics',custom_image_name='pic')
+                gis.search(search_params={'q': picquery,'num': 10, 'safe': 'off','fileType': 'jpg','imgType': 'photo','imgSize':'LARGE'}, path_to_dir='static/pics',custom_image_name='pic')
                 pic_list=os.listdir('static/pics')
                 pic_dir = {str(i): f'static/pics/{pic_list[i]}' for i in range(0, len(pic_list))}
                 print(pic_dir)
@@ -485,6 +502,16 @@ def display():
         f.write('True')
         f.close()
 
+
+@app.route('/speech_to_text',methods=['GET', 'POST'])
+def speech_to_text():
+    global count,name,jugad
+    display()
+    print(f'name offfffff theeee userrrrr {name}')
+    #talk(user_input) 
+    print('jelo')
+    return render_template('speech_to_text.html',ques=jugad,filename=name)
+
 template_list=[] 
 cou=ta=0
 @app.route('/template')
@@ -538,15 +565,7 @@ def download():
     path = f"static/{name}.pptx"
     return send_file(path, as_attachment=True)
 
-@app.route('/hello')
-def hello():
-    global count,name
-    
-    #talk(user_input) 
-    print('jelo')
-    
 
-    return render_template('hello.html',ques=li[count],filename=name)
 
 
 

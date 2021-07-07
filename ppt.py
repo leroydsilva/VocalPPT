@@ -11,7 +11,7 @@ from pptx.enum.chart import XL_CHART_TYPE
 from datetime import datetime
 from pptx.dml.color import RGBColor
 from matplotlib.colors import to_rgb
-name='leroy'
+# name='messi'
 
 def color_to_rgb(color):
     """Converts a color to a RGB tuple from (0-255)."""
@@ -28,13 +28,16 @@ def talk(audio):
     # time.sleep(2)
     # if audio==None:
     #     engine.say('good morning')
-    engine=pyttsx3.init('sapi5')
-    voices=engine.getProperty('voices')
-    engine.setProperty('voice',voices[0])
-    engine.setProperty('rate', 150)  # Speed percent (can go over 100)
-    engine.setProperty('volume', 0.9)
-    engine.say(audio)
-    engine.runAndWait()
+    try:
+        engine=pyttsx3.init('sapi5')
+        voices=engine.getProperty('voices')
+        engine.setProperty('voice',voices[0])
+        engine.setProperty('rate', 150)  # Speed percent (can go over 100)
+        engine.setProperty('volume', 0.9)
+        engine.say(audio)  
+        engine.runAndWait()
+    except:
+        print('errpr in talnk function..................')   
     return 
 
 def listen():
@@ -65,13 +68,20 @@ def listen():
 now = datetime.now()
 x=f'{now.day}/{now.month}/{now.year}'
 
-class CreatePpt:
+class CreatePpt(object):
     # global fileName
-    global name,x
-    def __init__(self,temp=None):
-         self.pr1=Presentation(temp) 
-         self.slide_count=0
-         self.footer=None
+    global x
+    # self.name=None
+    def __init__(self,temp=None,slide_count=None,footer=None,name=None):
+        self.pr1=Presentation(temp) 
+        if slide_count==None:
+            self.slide_count=0
+        else:
+            self.slide_count=slide_count   
+        self.footer=footer
+        self.name=name
+        # self.pr1.save("static/{}.pptx".format(name))
+        # os.system(f'ppt2pdf file static/{name}.pptx')
 
         #  name=session['phone']
         #  print(name+'thsi is naem asdorekokeo')
@@ -84,8 +94,8 @@ class CreatePpt:
         self.shapes(data=x,l=0.3,t=7)
         if self.footer!=None:
             self.shapes(data=self.footer,l=5.3,t=7)
-        self.pr1.save("static/{}.pptx".format(name))
-        os.system(f'ppt2pdf file static/{name}.pptx')
+        self.pr1.save("static/{}.pptx".format(self.name))
+        os.system(f'ppt2pdf file static/{self.name}.pptx')
         print('done')
         self.l=[]
         self.ph=[]
@@ -108,16 +118,16 @@ class CreatePpt:
         self.title1.text=title
         if self.footer==None:
             self.footer=title
-        self.pr1.save("static/{}.pptx".format(name))
-        os.system(f'ppt2pdf file static/{name}.pptx')
+        self.pr1.save("static/{}.pptx".format(self.name))
+        os.system(f'ppt2pdf file static/{self.name}.pptx')
         
     
 
     def add_subtitle(self,ph_num,subtitle=""):    
         self.subtitle1=self.slide.placeholders[self.ph[ph_num]]
         self.subtitle1.text=subtitle
-        self.pr1.save("static/{}.pptx".format(name))
-        os.system(f'ppt2pdf file static/{name}.pptx')
+        self.pr1.save("static/{}.pptx".format(self.name))
+        os.system(f'ppt2pdf file static/{self.name}.pptx')
         print('done sucessfully')
 
     def add_text(self,ph_num,text_data=""):
@@ -126,8 +136,8 @@ class CreatePpt:
         self.p=self.text_frame.add_paragraph()
         self.run = self.p.add_run()
         self.run.text=text_data
-        self.pr1.save("static/{}.pptx".format(name))
-        os.system(f'ppt2pdf file static/{name}.pptx')
+        self.pr1.save("static/{}.pptx".format(self.name))
+        os.system(f'ppt2pdf file static/{self.name}.pptx')
         print("done text")
 
     def add_font(self,font_name=None,font_color=None,font_size=None,bold=False,italic=False):
@@ -141,8 +151,8 @@ class CreatePpt:
             self.font.color.rgb = RGBColor(r,g,b)
         self.font.bold = bold
         self.font.italic= italic    
-        self.pr1.save("static/{}.pptx".format(name))
-        os.system(f'ppt2pdf file static/{name}.pptx')
+        self.pr1.save("static/{}.pptx".format(self.name))
+        os.system(f'ppt2pdf file static/{self.name}.pptx')
 
     def add_chart(self,data,num_data,ph_num):
         self.t=self.slide.placeholders[self.ph[ph_num]]
@@ -151,9 +161,8 @@ class CreatePpt:
         self.num_arr=[int(x) for x in num_data]
         self.chart_data.add_series('Series 1', self.num_arr)
         self.t = self.t.insert_chart(XL_CHART_TYPE.COLUMN_CLUSTERED,self.chart_data)
-        self.pr1.save("static/{}.pptx".format(name))
-        print('done chart...................')
-        os.system(f'ppt2pdf file static/{name}.pptx')
+        self.pr1.save("static/{}.pptx".format(self.name))
+        os.system(f'ppt2pdf file static/{self.name}.pptx')
 
 
 
@@ -186,8 +195,8 @@ class CreatePpt:
             difference_on_each_side = -ratio_difference / 2
             self.placeholder.crop_bottom = -difference_on_each_side
             self.placeholder.crop_top = -difference_on_each_side
-        self.pr1.save("static/{}.pptx".format(name))
-        os.system(f'ppt2pdf file static/{name}.pptx')
+        self.pr1.save("static/{}.pptx".format(self.name))
+        os.system(f'ppt2pdf file static/{self.name}.pptx')
 
     
-        
+       
