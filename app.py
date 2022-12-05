@@ -11,8 +11,10 @@ from wtforms import StringField
 from wtforms.validators import InputRequired, Length
 import psycopg2
 from google_images_search import GoogleImagesSearch
+from config import api_key,custom_search_csx
 
-gis = GoogleImagesSearch('AIzaSyCg_SQ6Lh-zZG1XyHPESnEz5iKEYsTQXJc', '1de73d9f58afbefc5')
+
+gis = GoogleImagesSearch(api_key,custom_search_csx)
 
 database_uri = 'postgresql+psycopg2://{dbuser}:{dbpass}@{dbhost}/{dbname}'.format(
     dbuser="postgres",
@@ -92,6 +94,15 @@ class Layouts(db.Model):
         self.category = category
         self.path = path
 
+class Ppt(db.Model):
+    filename = db.Column(db.String(100) , primary_key=True)
+    slidecount = db.Column(db.Integer)
+    footer = db.Column(db.String(1000))
+
+    def __init__(self, filename=None, slidecount=None,footer=None):
+        self.filename = filename
+        self.slidecount = slidecount
+        self.footer=footer
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -157,7 +168,7 @@ def setfalse():
 @app.route('/hello')
 def hello():
     global count,name
-    
+    # count=-2
     with open('transcript.txt', 'w') as f:
         f.truncate()
         f.close()
@@ -207,9 +218,9 @@ pic_dir={}
 i=0
 n=0
 query=picquery=chart_data=None
-jugad=jugad1=None
+var=var2=None
 def iterate():
-    global i,n,slide_layout,count,jugad
+    global i,n,slide_layout,count,var
     if i !=n:
         if 'Title' in slide_layout[i]:
             count=3          
@@ -228,18 +239,18 @@ def iterate():
                     os.remove(os.path.join(root, filea)) 
             # talk('please enter the topic of the picture you want')
             i+=1 
-            jugad=f'please enter the topic of the picture you want'
+            var=f'please enter the topic of the picture you want'
             return jsonify({'mystring':"please enter the topic of the picture you want"})
-        jugad=f'please enter data into {slide_layout[i]}'    
+        var=f'please enter data into {slide_layout[i]}'    
         # talk(f'please enter data into {slide_layout[i]}')
         i+=1 
         return jsonify({'mystring':f'please enter data into {slide_layout[i-1]}'})
     else:
         count=1 
-        yo=f'slide {obj.slide_count} done ,do you want to add more slides?'
-        jugad=yo
-        # talk(yo)
-        return jsonify({'mystring':yo})
+        temp=f'slide {obj.slide_count} done ,do you want to add more slides?'
+        var=temp
+        # talk(temp)
+        return jsonify({'mystring':temp})
           
 
 @app.route('/talkFunc/<strin>')    
@@ -257,8 +268,8 @@ li=['Select the template by saying the number','choose the layout','choose the l
 ]
 @app.route('/listen1')
 def listen1():
-    global count,topic_list,jugad,name
-    global li,obj,slide_layout,i,n,query,picquery,pic_list,pic_dir,jugad1,chart_data,template_list
+    global count,topic_list,var,name
+    global li,obj,slide_layout,i,n,query,picquery,pic_list,pic_dir,var2,chart_data,template_list
     count+=1  
     print(count)
     
@@ -272,8 +283,8 @@ def listen1():
     #     elif 'resume' in data:
     #         count=1
     #         obj=CreatePpt(f'static/{name}.pptx')
-    #         jugad='do you want to add new slide?'
-    #         return jsonify({'mystring':jugad})
+    #         var='do you want to add new slide?'
+    #         return jsonify({'mystring':var})
 
 
     if count==0:
@@ -329,6 +340,8 @@ def listen1():
             return jsonify({'mystring':li[count]})
         elif 'no' in data:
             print('thanks')
+            # f=name+'.pptx'
+            # cur.execute(f"insert into ppt values('{f}','{obj.slide_count}','{obj.footer}')")
             return jsonify({'mystring':f'Thanks {name} for using Vocal PPT'})  
         else:
             # talk('sorry did not get you') 
@@ -410,7 +423,7 @@ def listen1():
                 pic_list=os.listdir('static/pics')
                 pic_dir = {str(i): f'static/pics/{pic_list[i]}' for i in range(0, len(pic_list))}
                 print(pic_dir)
-                jugad1='choose the Picture by saying the number'
+                var2='choose the Picture by saying the number'
                 # talk("choose the Picture by saying the number")
                 return jsonify({'mystring':'choose the Picture by saying the number'})
 
@@ -451,6 +464,7 @@ def listen1():
 
     elif count==12:
         data=listen()
+        flag=False
         if data=='could not understand audio':
             return error()
         font=color=size=bold=italic=None
@@ -479,11 +493,9 @@ def listen1():
         display()
 
         if flag!=True:
-            # talk('sorry did not get you') 
             count=11
-            return jsonify({'mystring':'sorry did not get you'})   
-        # talk('do you have more text to add?') 
-        # count=13
+            return jsonify({'mystring':'invalid font'})   
+
         return jsonify({'mystring':'do you have more text to add?'})
 
     elif count==13:
@@ -505,12 +517,12 @@ def display():
 
 @app.route('/speech_to_text',methods=['GET', 'POST'])
 def speech_to_text():
-    global count,name,jugad
+    global count,name,var
     display()
     print(f'name offfffff theeee userrrrr {name}')
     #talk(user_input) 
     print('jelo')
-    return render_template('speech_to_text.html',ques=jugad,filename=name)
+    return render_template('speech_to_text.html',ques=var,filename=name)
 
 template_list=[] 
 cou=ta=0
@@ -556,7 +568,7 @@ def picture():
     # num=[i for i in range(0,len(pic_list))]
     # print(num)
     
-    return render_template('picDisplay.html',data=pic_list,q=jugad1,len=len(pic_list))
+    return render_template('picDisplay.html',data=pic_list,q=var2,len=len(pic_list))
 
 @app.route('/download')
 def download():

@@ -1,2 +1,5 @@
 venv/
 flask_session/
+config.py
+migrations/
+static/
